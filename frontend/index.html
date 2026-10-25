@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome · University Management System</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<p class="boot" role="status">Loading… <a href="/login">Go to sign in</a></p>
+<script src="/js/ums.js"></script>
+<script>
+(async function () {
+  if (UMS.store.get()) {
+    try { const me = await UMS.api.get('/auth/me', { silent: true }); location.replace(UMS.home(me.role)); return; }
+    catch (e) { UMS.store.clear(); }
+  }
+  location.replace('/login');
+})();
+</script>
+</body>
+</html>
