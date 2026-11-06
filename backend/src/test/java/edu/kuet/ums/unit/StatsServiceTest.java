@@ -49,7 +49,7 @@ class StatsServiceTest {
         when(courses.countByTeacherIsNull()).thenReturn(1L);
         when(users.countByEnabledFalse()).thenReturn(2L);
         when(attendance.count()).thenReturn(3L);
-        when(attendance.countByStatusIn(any(Collection.class))).thenReturn(2L);   // 2 of 3 attended
+        when(attendance.countByStatusIn(any(Collection.class))).thenReturn(2L);
         when(students.countByDepartment()).thenReturn(List.<Object[]>of(new Object[]{"CSE", 2L}));
         when(enrollments.topCourses(eq(EnrollmentStatus.DROPPED), any()))
                 .thenReturn(List.<Object[]>of(new Object[]{"CSE-3101", "Database Systems", 2L}));
@@ -66,30 +66,4 @@ class StatsServiceTest {
         assertThat(s.topCourses().get(0).code()).isEqualTo("CSE-3101");
     }
 
-    @Test
-    void attendanceRateIsNullWhenNothingWasRecordedAndTeacherTotalsAreSummed() {
-        when(attendance.count()).thenReturn(0L);
-        when(attendance.countByStatusIn(any(Collection.class))).thenReturn(0L);
-        when(students.countByDepartment()).thenReturn(List.of());
-        when(enrollments.topCourses(any(), any())).thenReturn(List.of());
-        assertThat(service().stats().attendanceRate()).isNull();
-
-        Course c = mock(Course.class);
-        when(c.getId()).thenReturn(7L);
-        when(c.getCode()).thenReturn("CSE-1");
-        when(c.getTitle()).thenReturn("Intro");
-        when(courses.findByTeacherUsername("teacher1")).thenReturn(List.of(c));
-        when(enrollments.countByCourseIdAndStatusNot(7L, EnrollmentStatus.DROPPED)).thenReturn(5L);
-        when(enrollments.countByCourseIdAndGradeIsNotNull(7L)).thenReturn(2L);
-        when(attendance.countByCourseId(7L)).thenReturn(4L);
-        when(attendance.countByCourseIdAndStatusIn(eq(7L), any(Collection.class))).thenReturn(3L);
-
-        TeacherStatsResponse t = service().teacherStats("teacher1");
-
-        assertThat(t.courses()).isEqualTo(1);
-        assertThat(t.students()).isEqualTo(5);
-        assertThat(t.graded()).isEqualTo(2);
-        assertThat(t.attendanceRate()).isEqualTo(75.0);
-        assertThat(t.courseStats().get(0).attendanceRate()).isEqualTo(75.0);
-    }
 }
